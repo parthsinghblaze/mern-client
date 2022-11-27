@@ -17,18 +17,18 @@ import {getAllPosts} from "../../feature/posts/postSlice";
 import {useDispatch, useSelector} from "react-redux";
 import {CircularProgress} from "@mui/material";
 import Masonry from '@mui/lab/Masonry';
+import {useNavigate} from "react-router";
 
 function Posts() {
 
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    const {isLoading, posts} = useSelector((state) => state.posts)
+    const {isLoading, posts} = useSelector((state) => state.posts);
 
     useEffect(() => {
         dispatch(getAllPosts())
-    }, [])
-
-    console.log(posts)
+    }, []);
 
     if(isLoading) {
         return <CircularProgress />
@@ -38,10 +38,12 @@ function Posts() {
             <Masonry  columns={3} spacing={4} padding={5}>
                     {
                         posts && posts.map((item, index) => {
+                            console.log(item)
                             const {title, creator,
                                 selectedFile, message,
-                                likeCount
-                            } = item
+                                likeCount,
+                                _id
+                            } = item;
                             return (
                                 <div key={index}>
                                 <Card
@@ -58,7 +60,7 @@ function Posts() {
                                     </CardContent>
                                     <CardActions>
                                         <Button size="small">Delete</Button>
-                                        <Button size="small">Edit</Button>
+                                        <Button size="small" onClick={() => navigate(`/edit-post/${_id}`, { state : {...item} })}>Edit</Button>
                                         <Button size="small">Like {likeCount} </Button>
                                     </CardActions>
                                 </Card>

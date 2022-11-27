@@ -15,7 +15,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useFormik } from 'formik';
 import FileBase from "react-file-base64"
 import {useDispatch, useSelector} from "react-redux";
-import { getAllPosts, createPost } from "../feature/posts/postSlice";
+import {getAllPosts, createPost, updatePost} from "../feature/posts/postSlice";
+import {useLocation, useNavigate, useParams} from "react-router";
 const theme = createTheme();
 
 const validationSchema = yup.object({
@@ -33,24 +34,21 @@ const validationSchema = yup.object({
         .required('Tag is required'),
 });
 
-function CreatePost() {
+function EditPost() {
 
     const {isLoading} = useSelector((state) => state.posts);
 
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const {state : formValue} = useLocation();
+    const params = useParams();
 
     const formik = useFormik({
-        initialValues: {
-            creator: '',
-            title: '',
-            message: '',
-            tags: '',
-            selectedFile: ''
-        },
+        initialValues: formValue,
         validationSchema: validationSchema,
         onSubmit: (values) => {
             console.log(values);
-            dispatch(createPost({values, resetForm}))
+            dispatch(updatePost({values, resetForm, id: params.id, navigate}))
         },
     });
 
@@ -68,32 +66,32 @@ function CreatePost() {
                     }}
                 >
                     <Typography component="h1" variant="h5">
-                        Create Post
+                        Edit Post
                     </Typography>
                     <form onSubmit={formik.handleSubmit} autoComplete="off" style={{ width : "100%", padding: "30px 0" }}>
                         <Box marginBottom={3} fullWidth>
-                        <TextField
-                            fullWidth
-                            id="creator"
-                            name="creator"
-                            label="Creator"
-                            value={formik.values.creator}
-                            onChange={formik.handleChange}
-                            error={formik.touched.creator && Boolean(formik.errors.creator)}
-                            helperText={formik.touched.creator && formik.errors.creator}
-                        />
+                            <TextField
+                                fullWidth
+                                id="creator"
+                                name="creator"
+                                label="Creator"
+                                value={formik.values.creator}
+                                onChange={formik.handleChange}
+                                error={formik.touched.creator && Boolean(formik.errors.creator)}
+                                helperText={formik.touched.creator && formik.errors.creator}
+                            />
                         </Box>
                         <Box marginBottom={3}>
-                        <TextField
-                            fullWidth
-                            id="message"
-                            name="message"
-                            label="Message"
-                            value={formik.values.message}
-                            onChange={formik.handleChange}
-                            error={formik.touched.message && Boolean(formik.errors.message)}
-                            helperText={formik.touched.message && formik.errors.message}
-                        />
+                            <TextField
+                                fullWidth
+                                id="message"
+                                name="message"
+                                label="Message"
+                                value={formik.values.message}
+                                onChange={formik.handleChange}
+                                error={formik.touched.message && Boolean(formik.errors.message)}
+                                helperText={formik.touched.message && formik.errors.message}
+                            />
                         </Box>
                         <Box marginBottom={3}>
                             <TextField
@@ -132,4 +130,4 @@ function CreatePost() {
     )
 }
 
-export default CreatePost
+export default EditPost

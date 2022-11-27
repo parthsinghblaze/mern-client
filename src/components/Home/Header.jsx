@@ -18,7 +18,7 @@ const theme = createTheme();
 
 function Header() {
 
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     return (
         <ThemeProvider theme={theme}>
