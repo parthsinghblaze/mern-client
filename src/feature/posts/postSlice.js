@@ -1,71 +1,108 @@
-import {createAsyncThunk, createSlice} from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "../../utilites/axios";
 
 const initialState = {
-    isLoading: false,
-    posts: []
+  isLoading: false,
+  posts: [],
 };
 
-export const getAllPosts = createAsyncThunk("posts/getAllPosts", async (name, thunkAPI) => {
+export const createPost = createAsyncThunk(
+  "posts/createPost",
+  async ({ formValue, resetForm }, thunkAPI) => {
     try {
-        const resp = await axios.get("/posts");
-        return resp.data
+      const resp = await axios.post("/posts", formValue);
+      if (resp.status === 200) {
+        resetForm();
+        return resp.data;
+      }
     } catch (e) {
-        console.log(e)
+      console.log(e);
     }
-});
+  }
+);
 
-export const createPost = createAsyncThunk("posts/createPost" , async ({values, resetForm}, thunkAPI) => {
+export const updatePost = createAsyncThunk(
+  "posts/updatePost",
+  async ({ formValue, resetForm, id, navigate }, thunkAPI) => {
     try {
-        const resp = await axios.post("/posts", values);
-        if(resp.status === 200) {
-            resetForm();
-            return resp.data
-        }
+      const resp = await axios.patch(`/posts/${id}`, formValue);
+      navigate("/");
     } catch (e) {
-        console.log(e)
-
+      console.log(e);
     }
-});
+  }
+);
 
-export const updatePost = createAsyncThunk("posts/updatePost" , async({values, resetForm, id, navigate}, thunkAPI) => {
+export const deletePost = createAsyncThunk(
+  "posts/deletePost",
+  async (id, thunkAPI) => {
     try {
-        const resp = await axios.patch(`/posts/${id}`, values);
-        navigate('/');
+      const resp = await axios.delete(`/posts/${id}`);
+      thunkAPI.dispatch(getAllPosts());
     } catch (e) {
-        console.log(e)
+      console.log(e);
     }
-});
+  }
+);
 
 const postSlice = createSlice({
-    name: "posts",
-    initialState,
-    reducers: {
-        startLoading: (state) => {
-            state.isLoading = true
-        }
+  name: "posts",
+  initialState,
+  reducers: {
+    startLoading: (state) => {
+      state.isLoading = true;
     },
-    extraReducers: {
-        [getAllPosts.pending] : (state) => {
-            state.isLoading = true
-        },
-        [getAllPosts.fulfilled] : (state, action) => {
-            state.isLoading = false;
-            state.posts = action.payload
-        },
-        [createPost.pending] : (state, action) => {
-            state.isLoading = true;
-        },
-        [createPost.fulfilled] : (state, action) => {
-            state.isLoading = false;
-        },
-        [updatePost.pending] : (state, action) => {
-            state.isLoading = true;
-        },
-        [updatePost.fulfilled] : (state, action) => {
-            state.isLoading = false;
-        }
-    }
+    stopLoading: (state) => {
+      state.isLoading = false;
+    },
+    getAllPosts: (state, action) => {
+      state.posts = action.payload;
+    },
+  },
+  extraReducers: {
+    [createPost.pending]: (state, action) => {
+      state.isLoading = true;
+    },
+    [createPost.fulfilled]: (state, action) => {
+      state.isLoading = false;
+    },
+    [updatePost.pending]: (state, action) => {
+      state.isLoading = true;
+    },
+    [updatePost.fulfilled]: (state, action) => {
+      state.isLoading = false;
+    },
+  },
 });
 
-export default postSlice.reducer
+export const { startLoading, stopLoading, getAllPosts } = postSlice.actions;
+
+export default postSlice.reducer;
+
+export const fetchAllPosts = () => {
+  return async (dispatch, getState) => {
+    dispatch(startLoading());
+    try {
+      const resp = await axios.get("/posts");
+      dispatch(getAllPosts(resp.data));
+      dispatch(stopLoading());
+    } catch (e) {
+      console.log(e);
+    }
+  };
+};
+
+export const likePost = (id) => {
+  return async (dispatch, getState) => {
+    dispatch(startLoading());
+    try {
+      const resp = await axios.patch(`/posts/${id}/likePost`);
+      if (resp.status === 200) {
+        dispatch(fetchAllPosts());
+        dispatch(stopLoading());
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+};
